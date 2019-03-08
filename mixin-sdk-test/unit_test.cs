@@ -21,6 +21,28 @@ namespace mixin_sdk_test
 
             Console.WriteLine("======== Initiation Finished ========= \n");
 
+
+
+            mixinApi.WebSocketConnect(HandleOnRecivedMessage).Wait();
+
+            mixinApi.StartRecive();
+
+            do
+            {
+                var msg = Console.ReadLine();
+
+
+            } while (true);
+
+        }
+        static void Main_all_process(string[] args)
+        {
+            Console.WriteLine("======== Mixin C# SDK Test ========= \n");
+            MixinApi mixinApi = new MixinApi();
+            mixinApi.Init(USRCONFIG.ClientId, USRCONFIG.ClientSecret, USRCONFIG.SessionId, USRCONFIG.PinToken, USRCONFIG.PrivateKey);
+
+            Console.WriteLine("======== Initiation Finished ========= \n");
+
             Console.WriteLine("======== Test Create PIN ===========\n");
 
             Console.WriteLine(mixinApi.CreatePIN(USRCONFIG.PinCode, "123456").ToString());
@@ -214,6 +236,7 @@ namespace mixin_sdk_test
 
         static void HandleOnRecivedMessage(object sender, EventArgs args, string message)
         {
+            System.Console.WriteLine("yo");
             System.Console.WriteLine(message);
         }
 
