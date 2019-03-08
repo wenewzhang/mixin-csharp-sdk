@@ -2,6 +2,7 @@
 using System.Collections.Generic;
 using MixinSdk;
 using MixinSdk.Bean;
+using Newtonsoft.Json;
 using Org.BouncyCastle.Asn1.X509;
 using Org.BouncyCastle.Crypto;
 using Org.BouncyCastle.Crypto.Generators;
@@ -228,16 +229,42 @@ namespace mixin_sdk_test
             do
             {
                 var msg = Console.ReadLine();
-                mixinApi.SendTextMessage("fd72abcd-b080-3e0e-bfea-a0b1282b4bd0", msg).Wait();
-                
+
             } while (true);
 
         }
 
         static void HandleOnRecivedMessage(object sender, EventArgs args, string message)
         {
-            System.Console.WriteLine("yo");
-            System.Console.WriteLine(message);
+
+            //System.Console.WriteLine(message);
+            var incomingMessage = JsonConvert.DeserializeObject<RecvWebSocketMessage>(message);
+            System.Console.WriteLine("incomingMessage");
+            if(incomingMessage.data == null)
+            {
+
+            }
+            else {
+                System.Console.WriteLine(incomingMessage.data.conversation_id);
+                if(sender.GetType() == typeof(MixinApi))
+                {
+                    MixinApi callback = (MixinApi)sender;
+                    if (incomingMessage.action == "ACKNOWLEDGE_MESSAGE_RECEIPT")
+                    {
+                        System.Console.WriteLine("ACKNOWLEDGE_MESSAGE_RECEIPT + " + incomingMessage.data.message_id);
+                    }
+                    else
+                    {
+                        callback.SendMessageResponse(incomingMessage.data.message_id).Wait();
+
+                        byte[] strOriginal = Convert.FromBase64String(incomingMessage.data.data);
+                        string clearText = System.Text.Encoding.UTF8.GetString(strOriginal);
+                        callback.SendTextMessage(incomingMessage.data.conversation_id, clearText).Wait();
+                    }
+                }
+
+            }
+
         }
 
     }
