@@ -363,6 +363,7 @@ namespace MixinSdk
         /// <param name="memo">Memo.</param>
         public Transfer Transfer(string assetId, string opponentId, string amount, string pin, string traceId, string memo)
         {
+            System.Console.WriteLine("Transfer...");
             return TransferAsync(assetId, opponentId, amount, pin, traceId, memo).Result;
         }
 
@@ -391,9 +392,10 @@ namespace MixinSdk
                 pin = pinBlock,
                 memo = memo
             };
-
+            System.Console.WriteLine(p);
             var rz = await doPostRequestAsync(req, p, true);
-
+            System.Console.WriteLine("Transfer...Posted");
+            System.Console.WriteLine(rz);
             return JsonConvert.DeserializeObject<Transfer>(rz);
         }
 
@@ -498,6 +500,7 @@ namespace MixinSdk
             var request = new RestRequest(req, Method.GET);
 
             request.AddHeader("Content-Type", "application/json");
+            request.AddHeader("Content-length", "0");
             request.AddParameter("limit", limit, ParameterType.QueryString);
             request.AddParameter("offset", offset, ParameterType.QueryString);
             if (!string.IsNullOrEmpty(assetId))
@@ -512,6 +515,7 @@ namespace MixinSdk
             if (isAuth)
             {
                 string token = MixinUtils.GenJwtAuthCode("GET", req, "", userConfig.ClientId, userConfig.SessionId, priKey);
+                System.Console.WriteLine("token:" + token);
 
                 var jwtAuth = new RestSharp.Authenticators.JwtAuthenticator(token);
                 jwtAuth.Authenticate(client, request);
@@ -530,7 +534,20 @@ namespace MixinSdk
 
             return rz;
         }
+        public  string NetworkUserSnapshots(string offset, string assetId, string order = "DESC",int limit = 10) {
+            return NetworkUserSnapshotsAsync(offset, assetId, order, limit).Result;
+        }
 
+        public async Task<string> NetworkUserSnapshotsAsync(string offset, string assetId, string order = "DESC",int limit = 10)
+        {
+            string req = "/network/snapshots";
+            req += "?limit="  + limit.ToString();
+            req += "&offset=" + offset;
+            req += "&asset="  + assetId;
+            req += "&order="  + order;
+            var rz = await doGetRequestAsync2(req, true);
+            return rz;
+        }
         /// <summary>
         /// Network snapshot.
         /// </summary>

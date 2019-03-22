@@ -141,5 +141,35 @@ namespace MixinSdk
 
             return response.Data.data;
         }
+        private async Task<string> doGetRequestAsync2(string uri, bool isNeedAuth, string token = null)
+        {
+            System.Console.WriteLine(uri);
+            var request = new RestRequest(uri, Method.GET);
+            request.AddHeader("Content-Type", "application/json");
+            request.AddHeader("Content-length", "0");
+            if (isNeedAuth)
+            {
+                if (string.IsNullOrEmpty(token))
+                {
+                    CheckAuth();
+                    token = GenGetJwtToken(uri, "");
+                }
+                System.Console.WriteLine("Token:" + token);
+                // var jwtAuth = new RestSharp.Authenticators.JwtAuthenticator(token);
+                // jwtAuth.Authenticate(client, request);
+                request.AddHeader("Authorization", "Bearer " + token);
+            }
+
+            var cts = new CancellationTokenSource(ReadTimeout);
+            var response = await client.ExecuteTaskAsync<Data>(request, cts.Token);
+
+            if (null == response.Data.data)
+            {
+                var errorinfo = JsonConvert.DeserializeObject<MixinError>(response.Content);
+                throw new MixinException(errorinfo);
+            }
+
+            return response.Data.data;
+        }
     }
 }
